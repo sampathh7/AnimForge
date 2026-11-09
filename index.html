@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnimForge — 3D Modeler &amp; Animation Studio</title>
+<link rel="stylesheet" href="./styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d1018'/><path d='M16 5l9 5v12l-9 5-9-5V10z' fill='none' stroke='%236ee7ff' stroke-width='2'/></svg>">
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════════ TOP BAR ══════════════ -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#6ee7ff"/><stop offset="1" stop-color="#a78bfa"/>
+          </linearGradient>
+        </defs>
+        <path d="M16 3.2l10.2 5.9v13.8L16 28.8 5.8 22.9V9.1z" fill="none" stroke="url(#lg)" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M16 3.2v11M16 14.2l10.2-5.1M16 14.2L5.8 9.1M16 14.2v14.6" fill="none" stroke="url(#lg)" stroke-width="1.2" opacity=".8"/>
+        <circle cx="16" cy="14.2" r="2.1" fill="url(#lg)"/>
+      </svg>
+      <div class="brand-text">
+        <strong>AnimForge</strong>
+        <span>3D modeling &amp; animation studio</span>
+      </div>
+    </div>
+
+    <div class="project-chip">
+      <span class="dot"></span>
+      <input id="project-name" class="project-name" value="Untitled scene" spellcheck="false" aria-label="Project name">
+    </div>
+
+    <div class="topbar-actions">
+      <div class="seg">
+        <button class="icon-btn" id="btn-undo" title="Undo (⌘/Ctrl+Z)" aria-label="Undo">
+          <svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5M4 12h9a6 6 0 016 6v1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-redo" title="Redo (⌘/Ctrl+Shift+Z)" aria-label="Redo">
+          <svg viewBox="0 0 24 24"><path d="M15 7l5 5-5 5M20 12h-9a6 6 0 00-6 6v1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <button class="ghost-btn" id="btn-new" title="New scene">New</button>
+      <button class="ghost-btn" id="btn-open" title="Open project (.json)">Open</button>
+      <button class="ghost-btn" id="btn-save" title="Save project (.json)">Save</button>
+      <button class="primary-btn" id="btn-export" title="Export 3D model">
+        <svg viewBox="0 0 24 24" class="mini"><path d="M12 16V4m0 0L8 8m4-4l4 4M5 15v3a2 2 0 002 2h10a2 2 0 002-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Export GLB
+      </button>
+      <button class="icon-btn" id="btn-help" title="Shortcuts & help" aria-label="Help">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.6 9.3a2.5 2.5 0 114.3 2.1c-.8.7-1.6 1.1-1.9 2.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="currentColor"/></svg>
+      </button>
+      <input type="file" id="file-input" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="layout">
+
+    <!-- LEFT PANEL -->
+    <aside class="panel panel-left">
+      <div class="panel-scroll">
+        <section class="pblock">
+          <h3>Primitives</h3>
+          <div class="prim-grid" id="prim-grid"></div>
+          <button class="wide-btn lib-open" id="btn-library" title="Instant animated models (L)">
+            <span class="lib-open-label">
+              <svg viewBox="0 0 24 24" class="mini"><path d="M12 3l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.2l5.9-.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              Model library
+            </span>
+            <em id="lib-count">15</em>
+          </button>
+        </section>
+
+        <section class="pblock grow">
+          <h3>Outliner <span class="count" id="obj-count">0</span></h3>
+          <ul class="outliner" id="outliner"></ul>
+        </section>
+
+        <section class="pblock">
+          <h3>Animation clips <span class="count" id="clip-count">0</span></h3>
+          <ul class="clip-list" id="clip-list"></ul>
+          <button class="wide-btn" id="btn-add-clip">
+            <svg viewBox="0 0 24 24" class="mini"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+            New clip
+          </button>
+        </section>
+      </div>
+    </aside>
+
+    <!-- STAGE -->
+    <div class="stage" id="stage">
+      <div class="viewport-canvas" id="viewport"></div>
+
+      <div class="vp-toolbar">
+        <div class="tool-group" role="group" aria-label="Transform tool">
+          <button class="tool-btn active" data-tool="translate" title="Move (W)">
+            <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-2.5 2.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 21l2.5-2.5M3 12l2.5-2.5M3 12l2.5 2.5M21 12l-2.5-2.5M21 12l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="rotate" title="Rotate (E)">
+            <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M20 7v5h-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="scale" title="Scale (R)">
+            <svg viewBox="0 0 24 24"><path d="M5 19L19 5M13 5h6v6M5 13v6h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="tool-group">
+          <button class="tool-btn" id="btn-snap" title="Snap to grid">
+            <svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M9 4v16M15 4v16" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".85"/></svg>
+          </button>
+          <button class="tool-btn active" id="btn-grid" title="Show grid">
+            <svg viewBox="0 0 24 24"><path d="M3 8l9-4 9 4-9 4-9-4zm0 4l9 4 9-4M3 16l9 4 9-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="tool-btn" id="btn-focus" title="Frame selection (F)">
+            <svg viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 00-1 1v4M15 4h4a1 1 0 011 1v4M9 20H5a1 1 0 01-1-1v-4M15 20h4a1 1 0 001-1v-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+          </button>
+        </div>
+        <div class="tool-group views">
+          <button class="view-btn" data-view="persp">Persp</button>
+          <button class="view-btn" data-view="front">Front</button>
+          <button class="view-btn" data-view="side">Side</button>
+          <button class="view-btn" data-view="top">Top</button>
+        </div>
+      </div>
+
+      <!-- transport -->
+      <div class="transport">
+        <div class="transport-group">
+          <button class="tp-btn" id="tp-start" title="Go to start (Home)">
+            <svg viewBox="0 0 24 24"><path d="M6 5v14M19 5l-9 7 9 7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="tp-btn" id="tp-prev" title="Previous frame (←)">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="tp-btn play" id="tp-play" title="Play / pause (Space)">
+            <svg viewBox="0 0 24 24" class="i-play"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
+            <svg viewBox="0 0 24 24" class="i-pause" style="display:none"><path d="M8 5h3.5v14H8zM13 5h3.5v14H13z" fill="currentColor"/></svg>
+          </button>
+          <button class="tp-btn" id="tp-next" title="Next frame (→)">
+            <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="tp-btn" id="tp-prevkey" title="Jump to previous key">
+            <svg viewBox="0 0 24 24"><path d="M17 5l-5 7 5 7M7 5v14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="tp-time"><span id="tp-current">0.00</span><i>/</i><span id="tp-duration">4.00</span></div>
+          <button class="tp-btn toggled" id="tp-loop" title="Loop playback">
+            <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0113.6-5.7L20 8M20 12a8 8 0 01-13.6 5.7L4 16M20 4v4h-4M4 20v-4h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="tp-btn toggled" id="tp-autokey" title="Auto-key: record transform changes as keys">
+            <svg viewBox="0 0 24 24"><path d="M12 4l5.2 8-5.2 8-5.2-8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span class="tp-label">auto-key</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="vp-hint" id="vp-hint">Left-drag orbit · scroll zoom · right-drag pan · click to select</div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <aside class="panel panel-right">
+      <div class="panel-scroll" id="inspector"></div>
+    </aside>
+  </main>
+
+  <!-- ══════════════ TIMELINE ══════════════ -->
+  <footer class="timeline">
+    <div class="tl-head">
+      <div class="tl-title">
+        <svg viewBox="0 0 24 24" class="mini"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span id="tl-clip-label">Timeline</span>
+      </div>
+      <div class="tl-tools">
+        <label class="num-field"><span>Duration</span><input id="tl-duration" type="number" min="0.5" max="60" step="0.5" value="4"><em>s</em></label>
+        <label class="num-field"><span>FPS</span><input id="tl-fps" type="number" min="12" max="60" step="1" value="30"></label>
+        <button class="ghost-btn small" id="tl-key">
+          <svg viewBox="0 0 24 24" class="mini"><path d="M12 5l6 7-6 7-6-7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          Key selected
+        </button>
+        <button class="ghost-btn small" id="tl-delkey" title="Delete key at playhead">Delete key</button>
+      </div>
+    </div>
+    <div class="tl-body" id="tl-body">
+      <div class="tl-grid" id="tl-grid">
+        <div class="tl-row head">
+          <div class="tl-cell name">Object</div>
+          <div class="tl-cell lane ruler" id="tl-ruler"></div>
+        </div>
+        <div id="tl-rows"></div>
+        <div class="tl-playhead" id="tl-playhead"><span class="tl-ph-cap"></span></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- model library overlay -->
+<div class="overlay" id="lib-overlay" hidden>
+  <div class="sheet lib-sheet">
+    <header>
+      <h2>Model library</h2>
+      <input id="lib-search" class="lib-search" type="search" placeholder="Search humans, animals, props…" spellcheck="false" aria-label="Search models">
+      <button class="icon-btn" id="lib-close" aria-label="Close">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="lib-toolbar">
+      <div class="lib-tabs" id="lib-tabs"></div>
+      <label class="lib-merge" title="Keep the current clip active and write the model's animation into it">
+        <input type="checkbox" id="lib-into-clip">
+        <span>Add to current clip</span>
+      </label>
+    </div>
+    <div class="lib-grid" id="lib-grid"></div>
+    <p class="lib-foot">Every model is ordinary primitives with an editable animation clip — drop one in, then restyle, re-shape or re-time it like anything else in the scene.</p>
+  </div>
+</div>
+
+<!-- help overlay -->
+<div class="overlay" id="help-overlay" hidden>
+  <div class="sheet">
+    <header><h2>AnimForge — quick guide</h2><button class="icon-btn" id="help-close" aria-label="Close">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button></header>
+    <div class="sheet-body">
+      <div class="help-col">
+        <h4>Build</h4>
+        <ul>
+          <li>Click a primitive to drop it in the scene — or open the <b>Model library</b> (<b>L</b>) for ready-made animated humans, animals and props.</li>
+          <li>Swap any object to a different primitive with the <b>Convert to</b> row, and bend it with <b>Taper</b> / <b>Twist</b>.</li>
+          <li>Library models drop in with their own clip — tick <b>Add to current clip</b> to merge a model's animation into the clip you are already working on.</li>
+          <li>A model is a group you can reshape: select the whole figure and drag the gizmo, click a part to recolour / convert / taper it, or <b>Split</b> it into loose objects.</li>
+          <li>Select an object, then drag the gizmo (or use <b>W</b> / <b>E</b> / <b>R</b> for move / rotate / scale).</li>
+          <li>Tweak size, colour and finish in the inspector.</li>
+        </ul>
+        <h4>Animate</h4>
+        <ul>
+          <li>Scrub the timeline, then hit <b>◆ Key</b> (or <b>K</b>) to record a pose.</li>
+          <li>Move the playhead and change the transform — auto-key records it.</li>
+          <li>Drag diamonds on the timeline to retime. Double-click a diamond to cycle easing.</li>
+          <li>Stack several clips for different actions.</li>
+        </ul>
+      </div>
+      <div class="help-col">
+        <h4>Shortcuts</h4>
+        <ul class="keys">
+          <li><kbd>Space</kbd> play / pause</li>
+          <li><kbd>K</kbd> insert key &nbsp; <kbd>Del</kbd> delete key / object</li>
+          <li><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd> move / rotate / scale</li>
+          <li><kbd>F</kbd> frame selection &nbsp; <kbd>D</kbd> duplicate</li>
+          <li><kbd>← →</kbd> step frame &nbsp; <kbd>Home</kbd> go to start</li>
+          <li><kbd>Ctrl/⌘ Z</kbd> undo &nbsp; <kbd>Ctrl/⌘ ⇧ Z</kbd> redo</li>
+          <li><kbd>Ctrl/⌘ S</kbd> save project &nbsp; <kbd>L</kbd> model library</li>
+        </ul>
+        <h4>Export</h4>
+        <ul>
+          <li><b>Export GLB</b> writes a binary glTF with every clip baked as a glTF animation — drop it into Blender, Unity, Godot, three.js or any AR viewer.</li>
+          <li><b>Save</b> writes an editable <code>.json</code> project you can reopen later.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script src="./app.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a57ea0d2fe5d40c3',t:'MTc5NDI0NjI5NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a57ea0d2fe5d40c3',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "animforge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --minify --format=iife --target=es2020 --legal-comments=inline --outfile=app.js",
+    "standalone": "node build-standalone.js",
+    "start": "python3 -m http.server 8000 --bind 0.0.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "AnimForge \u2014 browser-based 3D modelling and keyframe animation studio",
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "esbuild": "0.25.0"
+  }
+}
